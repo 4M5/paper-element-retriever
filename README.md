@@ -147,7 +147,6 @@ research_rag/
 ├── .env.example                   # Config template (copy to .env)
 ├── .gitignore
 ├── README.md
-├── HOW_IT_WORKS.md                # Detailed technical documentation
 │
 ├── ingestion/                     # Document processing
 │   ├── pdf_parser.py              # Section-aware PDF chunking + image extraction
