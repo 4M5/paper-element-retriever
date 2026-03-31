@@ -1,0 +1,27 @@
+# Core RAG
+chromadb==0.5.0
+sentence-transformers==3.0.1
+ollama==0.2.1
+
+# PDF parsing
+pymupdf==1.24.5
+
+# Evaluation
+ragas==0.2.6
+datasets==2.20.0
+
+# API
+fastapi==0.111.0
+uvicorn==0.30.1
+python-multipart==0.0.9
+
+# LangChain — pinned to compatible set
+langchain==0.2.6
+langchain-community==0.2.6
+langchain-core==0.2.43
+langchain-text-splitters==0.2.4
+langchain-openai==0.1.25
+
+# Utilities
+python-dotenv==1.0.1
+numpy==1.26.4
