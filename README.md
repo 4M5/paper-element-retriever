@@ -139,7 +139,7 @@ Open **http://localhost:8000** in your browser.
 ## Project Structure
 
 ```
-research_rag/
+paper-element-retriever/
 ├── main.py                        # FastAPI server (multimodal)
 ├── requirements.txt               # Python dependencies
 ├── .env.example                   # Config template (copy to .env)
