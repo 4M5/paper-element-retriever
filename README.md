@@ -45,7 +45,6 @@ Upload research papers or documents. Ask questions about **text AND figures**. G
 
 ```bash
 git clone https://github.com/4M5/paper-element-retriever.git
-cd research_rag
 ```
 
 ### Step 2: Create a virtual environment (recommended)
