@@ -44,7 +44,7 @@ Upload research papers or documents. Ask questions about **text AND figures**. G
 ### Step 1: Clone the repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/research_rag.git
+git clone https://github.com/4M5/paper-element-retriever.git
 cd research_rag
 ```
 
