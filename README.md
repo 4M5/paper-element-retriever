@@ -4,7 +4,6 @@ Upload research papers or documents. Ask questions about **text AND figures**. G
 
 > Powered by Ollama (local LLM + vision) + ChromaDB + sentence-transformers.  
 > **Multimodal**: Extracts and understands figures, charts, and tables from PDFs.  
-> Zero hallucination — answers only from your uploaded documents, with section & page citations.
 
 ---
 
