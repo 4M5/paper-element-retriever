@@ -102,6 +102,7 @@ Uploaded and extracted data can be removed when the session ends, preventing dat
                              │
                              ▼
                     Cited Answer
+```
 
 ## Technology Stack
 
@@ -149,6 +150,7 @@ paper-element-retriever/
 │
 └── frontend/
     └── index.html
+```
 
 ## Installation
 
@@ -163,6 +165,7 @@ paper-element-retriever/
 ```bash
 git clone https://github.com/4M5/paper-element-retriever.git
 cd paper-element-retriever
+```
 
 ### 2. Create a virtual environment
 
@@ -172,9 +175,6 @@ Using `venv`:
 python -m venv venv
 ```
 
-Paste this:
-
-````markdown
 Windows:
 
 ```bash
