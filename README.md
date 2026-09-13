@@ -1,191 +1,295 @@
-# Paper Element Retriever (Multimodal RAG)
+# Paper Element Retriever
 
-Upload research papers or documents. Ask questions about **text AND figures**. Get cited, grounded answers.
+A multimodal Retrieval-Augmented Generation (RAG) system for asking questions about research papers using both text and figures.
 
-> Powered by Ollama (local LLM + vision) + ChromaDB + sentence-transformers.  
-> **Multimodal**: Extracts and understands figures, charts, and tables from PDFs.  
+The system extracts section-aware text and figures from PDFs, processes them locally, retrieves relevant content, and generates cited answers using local language and vision models.
 
----
+![Paper Element Retriever](assets/overview.png)
 
-## Features
+## Overview
 
-- **Text RAG** — section-aware PDF chunking (Abstract, Methods, Results, etc.)
-- **Image RAG** — extracts figures/charts from PDFs, describes them using a vision model
-- **Grounded answers** — LLM only uses retrieved context, never hallucinated knowledge
-- **Citations** — every answer cites the section name and page number
-- **6-metric evaluation** — built-in evaluation suite (faithfulness, relevancy, precision, recall, correctness)
-- **Session-scoped** — each session is isolated, data auto-deleted on logout
-- **Fully local** — no API keys, no cloud, everything runs on your machine
+Traditional RAG systems often focus only on text. This project extends the retrieval pipeline to include visual elements such as figures, charts, and tables found in research papers.
 
----
+The pipeline is:
 
-## Stack
+PDF
+→ Text & Image Extraction
+→ Section-aware Chunking
+→ Embedding & Vector Storage
+→ Multimodal Retrieval
+→ Local LLM
+→ Cited Answer
 
-| Layer | Technology |
+## Key Features
+
+### Multimodal Retrieval
+
+- Extracts text from research papers
+- Splits text using academic section structure
+- Extracts figures and other embedded images
+- Uses a vision model to generate descriptions for extracted images
+- Stores text and image-derived content for retrieval
+
+### Grounded Question Answering
+
+Questions are answered using retrieved document context rather than relying solely on the language model's general knowledge.
+
+Answers include document references such as section names and page numbers.
+
+Example questions:
+
+- What methodology did the authors use?
+- What does Figure 1 show?
+- What were the main results?
+- What limitations did the authors mention?
+
+### Local LLM and Vision Models
+
+The system uses Ollama for local inference:
+
+- `llama3.1:8b` for text generation
+- `llava` for image understanding
+
+No external LLM API is required.
+
+### Evaluation
+
+The project includes an evaluation pipeline covering six RAG quality metrics:
+
+- Faithfulness
+- Answer Relevancy
+- Context Precision
+- Context Recall
+- Context Relevancy
+- Answer Correctness
+
+Evaluation reports also include average query latency.
+
+### Session Isolation
+
+Each user session has its own retrieval context.
+
+Uploaded and extracted data can be removed when the session ends, preventing data from being shared across sessions.
+
+## Architecture
+
+```text
+                    ┌─────────────────┐
+                    │   Research PDF  │
+                    └────────┬────────┘
+                             │
+                 ┌───────────┴───────────┐
+                 │                       │
+                 ▼                       ▼
+          Text Extraction          Image Extraction
+                 │                       │
+                 ▼                       ▼
+        Section-aware Chunks      Vision Processing
+                 │                       │
+                 └───────────┬───────────┘
+                             ▼
+                     Vector Storage
+                        ChromaDB
+                             │
+                             ▼
+                       User Query
+                             │
+                             ▼
+                    Retrieval Pipeline
+                             │
+                             ▼
+                    Local LLM (Ollama)
+                             │
+                             ▼
+                    Cited Answer
+
+## Technology Stack
+
+| Component | Technology |
 |---|---|
-| LLM (text) | Ollama — llama3.1:8b |
-| LLM (vision) | Ollama — llava |
-| Embeddings | sentence-transformers / all-MiniLM-L6-v2 |
-| Vector store | ChromaDB (session-scoped, auto-deleted) |
-| PDF parsing | PyMuPDF (section-aware chunking + image extraction) |
-| Evaluation | 6-metric RAGAS-style suite (Ollama as judge) |
+| Language | Python |
+| LLM | Ollama + Llama 3.1 8B |
+| Vision Model | Ollama + LLaVA |
+| Embeddings | Sentence Transformers |
+| Vector Database | ChromaDB |
+| PDF Processing | PyMuPDF |
 | API | FastAPI |
-| UI | Vanilla HTML/CSS/JS |
+| Frontend | HTML, CSS, JavaScript |
+| Evaluation | RAGAS-style evaluation pipeline |
 
----
+## Project Structure
+
+```text
+paper-element-retriever/
+│
+├── main.py
+├── requirements.txt
+├── .env.example
+├── .gitignore
+├── README.md
+│
+├── ingestion/
+│   ├── __init__.py
+│   ├── pdf_parser.py
+│   ├── image_processor.py
+│   └── vector_store.py
+│
+├── query/
+│   ├── __init__.py
+│   └── rag_engine.py
+│
+├── evaluation/
+│   ├── __init__.py
+│   └── evaluator.py
+│
+├── utils/
+│   ├── __init__.py
+│   ├── ollama_client.py
+│   └── session_manager.py
+│
+└── frontend/
+    └── index.html
 
 ## Installation
 
 ### Prerequisites
 
-- **Python 3.10+**
-- **Ollama** installed and running — [Download Ollama](https://ollama.com/download)
+- Python 3.10+
+- Ollama installed and running
+- Sufficient RAM/storage for the selected local models
 
-### Step 1: Clone the repository
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/4M5/paper-element-retriever.git
-```
+cd paper-element-retriever
 
-### Step 2: Create a virtual environment (recommended)
+### 2. Create a virtual environment
 
-Using conda:
-```bash
-conda create -n rag python=3.10 -y
-conda activate rag
-```
+Using `venv`:
 
-Or using venv:
 ```bash
 python -m venv venv
-source venv/bin/activate      # Linux/Mac
-# venv\Scripts\activate       # Windows
 ```
 
-### Step 3: Install Python dependencies
+Paste this:
+
+````markdown
+Windows:
+
+```bash
+venv\Scripts\activate
+```
+
+Linux/macOS:
+
+```bash
+source venv/bin/activate
+```
+
+### 3. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-This installs:
-| Package | Purpose |
-|---|---|
-| `chromadb` | Vector database for storing and searching embeddings |
-| `sentence-transformers` | Converts text into 384-dimensional embedding vectors |
-| `ollama` | Python client for local Ollama LLM |
-| `pymupdf` | PDF text extraction and image extraction |
-| `fastapi` | REST API framework |
-| `uvicorn` | ASGI server to run FastAPI |
-| `python-dotenv` | Loads config from `.env` file |
-| `ragas`, `datasets` | RAG evaluation framework |
-| `langchain*` | LLM orchestration (used by evaluation) |
+### 4. Install Ollama models
 
-### Step 4: Pull Ollama models
-
-Make sure Ollama is installed and running, then pull both models:
+Make sure Ollama is installed and running, then pull the required models:
 
 ```bash
-# Text model (for answering questions) — ~4.7GB
 ollama pull llama3.1:8b
-
-# Vision model (for describing images/figures) — ~4.7GB
 ollama pull llava
 ```
 
-> **Note**: You only need to pull models once. They are stored locally by Ollama.
+### 5. Configure environment variables
 
-### Step 5: Configure environment
+Copy `.env.example` to `.env`:
 
 ```bash
 cp .env.example .env
 ```
 
-The `.env` file contains all configurable settings:
+On Windows, you can also copy the file manually.
 
-| Variable | Default | What it does |
+The main configuration options include:
+
+| Variable | Default | Purpose |
 |---|---|---|
-| `OLLAMA_MODEL` | `llama3.1:8b` | LLM used for answering questions |
-| `VISION_MODEL` | `llava` | Vision model used for describing images |
-| `CHUNK_SIZE` | `600` | Number of words per text chunk |
-| `CHUNK_OVERLAP` | `80` | Word overlap between chunks |
-| `TOP_K_RESULTS` | `5` | Number of chunks retrieved per query |
-| `MIN_IMAGE_SIZE` | `100` | Minimum image dimension (px) to process |
+| `OLLAMA_MODEL` | `llama3.1:8b` | Text generation model |
+| `VISION_MODEL` | `llava` | Vision model for extracted images |
+| `CHUNK_SIZE` | `600` | Text chunk size |
+| `CHUNK_OVERLAP` | `80` | Chunk overlap |
+| `TOP_K_RESULTS` | `5` | Number of retrieved results |
+| `MIN_IMAGE_SIZE` | `100` | Minimum image dimension for processing |
 
-### Step 6: Run the application
+### 6. Run the application
 
 ```bash
 python main.py
 ```
 
-Open **http://localhost:8000** in your browser.
+Open the application in your browser:
 
----
+```text
+http://localhost:8000
+```
 
 ## Usage
 
-1. Click **Start Session**
-2. **Upload a PDF** (drag & drop or click the upload area)
-   - Text is chunked by academic sections
-   - Images are extracted and described by the vision model (takes 30-60s per image)
-3. **Ask questions** about the document
-   - *"What methodology did the authors use?"*
-   - *"What does Figure 1 show?"*
-   - *"Summarize the results"*
-4. **Run Evaluation** (optional) — tests RAG quality with 6 metrics
+1. Start a new session.
+2. Upload a research paper in PDF format.
+3. The system extracts text and embedded images.
+4. Text is divided into section-aware chunks.
+5. Extracted figures are processed using the vision model.
+6. Text and image-derived content are stored in ChromaDB.
+7. Ask questions about the uploaded paper.
+8. The system retrieves relevant context and generates a cited answer.
+9. Optionally run the evaluation pipeline.
 
----
+### Example Questions
 
-## Project Structure
+- What methodology did the authors use?
+- What does Figure 1 show?
+- What were the main results?
+- What limitations did the authors mention?
 
-```
-paper-element-retriever/
-├── main.py                        # FastAPI server (multimodal)
-├── requirements.txt               # Python dependencies
-├── .env.example                   # Config template (copy to .env)
-├── .gitignore
-├── README.md
-│
-├── ingestion/                     # Document processing
-│   ├── pdf_parser.py              # Section-aware PDF chunking + image extraction
-│   ├── image_processor.py         # Vision model image descriptions
-│   └── vector_store.py            # ChromaDB storage (text + image chunks)
-│
-├── query/                         # Answer generation
-│   └── rag_engine.py              # Grounded LLM answering + citations + images
-│
-├── evaluation/                    # Quality testing
-│   └── evaluator.py               # 6-metric evaluation suite
-│
-├── utils/                         # Shared utilities
-│   ├── ollama_client.py           # Ollama wrapper (text + vision)
-│   └── session_manager.py         # Session lifecycle management
-│
-└── frontend/                      # Web interface
-    └── index.html                 # Single-page UI
-```
+## Evaluation
 
----
+The project includes an evaluation pipeline for measuring different aspects of RAG performance.
 
-## Evaluation Metrics
-
-| Metric | What it checks | Pass threshold |
-|---|---|---|
-| Faithfulness | Answer only uses paper content | ≥ 0.80 |
-| Answer Relevancy | Answer addresses the question | ≥ 0.75 |
-| Context Precision | Best chunks ranked at top | ≥ 0.70 |
-| Context Recall | Context covers the full answer | ≥ 0.70 |
-| Context Relevancy | Retrieved chunks relate to query | ≥ 0.70 |
-| Answer Correctness | Answer matches ground truth | ≥ 0.75 |
-
----
-
-## Troubleshooting
-
-| Problem | Solution |
+| Metric | What it checks |
 |---|---|
-| `Connection refused` on startup | Make sure Ollama is running: `ollama serve` |
-| `Model not found` | Pull the model: `ollama pull llama3.1:8b` |
-| Upload takes too long | Vision model needs ~30-60s per image (normal for local inference) |
-| No images extracted | Check if your PDF has embedded images (not just scanned text) |
-| Query hangs | Frontend has a 2-min timeout; check Ollama is responsive |
+| Faithfulness | Whether the generated answer is supported by the retrieved context |
+| Answer Relevancy | Whether the answer addresses the user's question |
+| Context Precision | Whether relevant retrieved chunks are ranked highly |
+| Context Recall | Whether sufficient information was retrieved |
+| Context Relevancy | Whether the retrieved context is relevant to the query |
+| Answer Correctness | How closely the answer matches the expected answer |
+
+The evaluation pipeline also records average query latency.
+
+## Limitations
+
+- Local LLM and vision inference can be computationally expensive.
+- Processing figures can increase document ingestion time.
+- Results depend on the quality of PDF text and image extraction.
+- Scanned PDFs may require additional OCR processing.
+- Vision model descriptions may not perfectly capture complex charts or diagrams.
+- Retrieval quality depends on chunking, embeddings, and the selected `TOP_K_RESULTS`.
+- The current implementation is a research/portfolio prototype rather than a production-scale RAG service.
+
+## Future Improvements
+
+- OCR support for scanned research papers
+- Hybrid keyword and vector retrieval
+- Reranking of retrieved chunks
+- Improved table extraction
+- Multi-document question answering
+- Streaming responses
+- Persistent production storage
+- Larger and more diverse evaluation datasets
+
+## Project Context
+
+This project explores multimodal Retrieval-Augmented Generation for research-paper question answering, with a focus on document structure, visual information retrieval, local LLM inference, citation grounding, and measurable RAG evaluation.
